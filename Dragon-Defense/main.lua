@@ -1,66 +1,32 @@
-local towerui = require("TowerUI")
-local ui = require("ui")
-local monsterui = require("Monster")
 
+local ui = require("ui")
+local towerui = require("TowerUI")
+local monsterui = require("Monster")
+local mapclass =  require("map")
+local GC = require("GameController")
+local utilities = require("utilities")
+
+print ("GameController::" , GC)
+print ("mapclass", mapclass)
 
 --local mapbackground = display.newImageRect("Map.png", 640,480)
-local mapbackground = display.newImage("MapWithGrass.png",0,0,true)
-print (mapbackground.x)
-print (mapbackground.y)
---mapbackground:rotate(90)
---mapbackground.x = 320
---mapbackground.y = 480
---mapbackground.rotation = 90
 
-
-local mapsetup =   {{1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-					{1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-					{1,1,1,0,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-					{1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-					{1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-					{1,1,1,0,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-					{1,1,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-					{1,1,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-					{1,1,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1},
-					{1,1,1,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1},
-					{1,1,1,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1},
-					{1,1,1,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1},
-					{1,1,1,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1},
-					{1,1,1,0,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1},
-					{1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1},
-					{1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1},
-					{1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1},
-					{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-					{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-					{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}}
-local mapMaxX = 9
-local mapMaxY = 7
+local map = nil
                   
-local gameplanmaxX = display.contentWidth * (4/5)
-local gameplanmaxY = display.contentHeight * (2/3)
-
-local scaleX = gameplanmaxX / mapMaxX
-local scaleY = gameplanmaxY / mapMaxY
-local startbutton
-
+local startbutton = nil
 local squarepane = nil
-                  
-                  
-local AllTowers = {}
-local nroftowers = 0                  
-print "hej"
-print (mapsetup[2][2])
 local newtower = nil
 local vaveActive = false
 
 local Monsters = {}
 local numberofmonsters = 0
 
+local gamecontroller = GC.GameController:new()
+
 local function moveMonster(event)
-	print "Monster should move"
 	local i = 0
 	while i < numberofmonsters do
-		local doDamage = monsterui.moveMonster(Monsters[i], mapsetup, 30, 20, 32, 32)
+		local doDamage = monsterui.moveMonster(Monsters[i], map, 30, 20, 32, 32)
 	
 		--Monsters[i].y = Monsters[i].y+4
 		i = i+1
@@ -99,19 +65,10 @@ local function moveNewTower(event)
 			newtower.y = event.y
 		end
 		if (event.phase == "ended") then
-			local mapsetupX =  math.floor(event.x / 32)+1
-			local mapsetupY =  math.floor(event.y / 32)+1
-			print ("X and Y pos")
-			print (mapsetupX)
-			print (mapsetupY)
-			print (newtower)
-			if mapsetup[mapsetupY][mapsetupX] == 1 then
-				towerui.hideRange(newtower)
-				mapsetup[mapsetupY][mapsetupX] = newtower
-				
+			if (map:placeTowerAt(event)) then
+				print("GOOD")
 			else
 				print ("Not allowed to place tower")
-				print (newtower)
 				local parent = newtower.parent
 				print (parent)
 				parent:remove(newtower)
@@ -123,14 +80,10 @@ local function moveNewTower(event)
 end
 
 local function buildNewTower(event)
-	print (event)
-	print (event.target)
-	print (event.target._image)
-	print (event.target._range)
 	if event.phase == "moved" then
 		if (newtower == nil) then
 			newtower = towerui.NewTower{image = event.target._image, range = event.target._range}
-			newtower = towerui.showRange(newtower, scaleX)
+			newtower = towerui.showRange(newtower, map._tilesize)
 			newtower:addEventListener("touch", moveNewTower)
 		end
 		newtower.x = event.x
@@ -162,14 +115,8 @@ local function drawsquares()
 
 end
 
-
-local function gfxToMapCords(self, x, y)
-	print ("gfxToMap")
-	print (x)
-	print(y)
-end
-
-mapsetup._translateFunc = gfxToMapCords
+map = mapclass.initMap1()
+gamecontroller:setMap(map)
 
 local ArrowTower =towerui.NewTower{image = "ArrowTower.png", range = 2.5}
 ArrowTower.y =  50
@@ -182,11 +129,20 @@ CannonTower.x = display.contentWidth - 50
 CannonTower:addEventListener("touch", buildNewTower)
 
 
+
+
+
 startbutton = ui.newButton{default = "startbuttonRed.png", over = "startbuttonRedOver.png", id = "startbutton", text= "Sent Next Wave", size = 40, emboss = true}
 startbutton.x = display.contentWidth / 2
 startbutton.y = display.contentHeight - display.contentHeight /8
-startbutton:addEventListener("touch", sendWave)
+startbutton:addEventListener("touch", utilities.bind(gamecontroller, GC.GameController.sendWave))
 startbutton:scale(0.4, 0.4)
 startbutton.x = 800
 startbutton.y = 600
 drawsquares()
+
+
+
+
+
+

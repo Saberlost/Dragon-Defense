@@ -1,66 +1,64 @@
 module(..., package.seeall)
+local map = require("map")
 
-local function changeDirection(direction, mapsetup, x, y)
-	local newdirection = "south"
-	print ("changeDirection")
-	print(direction)
-	
-	if ((direction == "north")  or (direction == "south")) then
-		
-		if (mapsetup[y][x+1] == 0) then 
-			newdirection = "west"
-		elseif (mapsetup[y][x-1] == 0) then
-			newdirection = "east"
-		end
-	elseif ((direction == "west") or (direction == "east")) then
-		if (mapsetup[y+1][x] == 0) then
-			newdirection = "south"
-		elseif (mapsetup[y-1][x] == 0) then
-			newdirection = "north"
-		end
-	end
-	return newdirection
+local utilities = require("utilities")
+
+
+function getMapCords(Monster)
+	return Monster._mapcords
+end
+
+function setNewMapCords(Monster, mapcords)
+	Monster._mapcords = mapcords
+end
+
+function setNewDirection(Monster, dir)
+	Monster._direction = dir
+end
+
+function setGoalCords(Monster, mapcords)
+	print("setGoalCords" .. mapcords.x .. "," .. mapcords.y) 
+	Monster._mapgoalcords = mapcords
+end
+
+function getGoalCords(Monster)
+	return Monster._mapgoalcords 
+end
+
+function setDistanceToGoal(Monster, distance)
+	Monster._distance_to_goal = distance
+end
+
+function updateDistanceToGoal(Monster)
+	Monster._distance_to_goal = Monster._distance_to_goal - Monster._speed
+end 
+
+function isGoalReached(Monster)
+	return Monster._distance_to_goal <= 0
 end
 
 
-function moveMonster(Monster, mapsetup, maxX, maxY, sizeX, sizeY)
-	mapsetup:_translateFunc(Monster.x,Monster.y)
-	local mapsetupX =  math.floor((Monster.x / sizeX)+0.5)+1
-	local mapsetupY =  math.floor((Monster.y / sizeY)+0.5)+1
-	print ("X and Y pos")
-	print (mapsetupX)
-	print (mapsetupY)
-	
-	local newx = Monster.x
-	local newy = Monster.y
-	
-	if(Monster._direction == "north") then -- north
-		newy = newy - Monster._speed
-	elseif (Monster._direction == "west") then
-			newx = newx + Monster._speed
-	elseif (Monster._direction == "south") then
-			newy = newy + Monster._speed
-	elseif (Monster._direction == "east") then
-			newx = newx - Monster._speed
+function towards(Monster, direction)
+	local pos = {}
+	pos.x = Monster._mapcords.x
+	pos.y = Monster._mapcords.y
+	if(direction == "north") then -- north
+		pos.y = pos.y - Monster._speed
+	elseif (direction == "west") then
+		pos.x = pos.x + Monster._speed
+	elseif (direction == "south") then
+		pos.y = pos.y + Monster._speed
+	elseif (direction == "east") then
+		pos.x = pos.x - Monster._speed
 	end
-	
-	newmapsetupX = math.floor(newx / sizeX+0.5)+1
-	newmapsetupY = math.floor(newy / sizeY+0.5)+1
-	
-	
-	
-	if ((newmapsetupX == mapsetupX) and (newmapsetupY == mapsetupY)) then
-		Monster.x = newx
-		Monster.y = newy
-	elseif mapsetup[newmapsetupY][newmapsetupX] == 0 then
-		print("New Square")
-		Monster.x = newx
-		Monster.y = newy
-	else 
-		Monster._direction = changeDirection(Monster._direction, mapsetup, mapsetupX, mapsetupY)  
-	
-	end
+	return pos
 end
+
+function newPosition(Monster, newpos)
+	Monster.x = newpos.x
+	Monster.y = newpos.y
+end
+
 
 function NewMonster(params)
 	local Monster = display.newGroup()
@@ -84,4 +82,11 @@ function NewMonster(params)
 		Monster._speed = params.speed
 	end
 	return Monster
+end
+
+function printInfo(Monster)
+	print ("Me Monster!!!!")
+	print ("x,y" .. Monster.x .. "," .. Monster.y)
+	print ("Mapcords x,y" .. Monster._mapcords.x .. "," .. Monster._mapcords.y)
+	
 end
